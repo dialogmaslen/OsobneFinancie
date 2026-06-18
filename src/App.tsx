@@ -20,12 +20,16 @@ function App() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null)
+      const loggedInUser = session?.user ?? null
+      const isAnon = loggedInUser?.is_anonymous === true
+      setUser(isAnon ? null : loggedInUser)
       setLoading(false)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+      const loggedInUser = session?.user ?? null
+      const isAnon = loggedInUser?.is_anonymous === true
+      setUser(isAnon ? null : loggedInUser)
     })
 
     return () => subscription.unsubscribe()
