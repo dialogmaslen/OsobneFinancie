@@ -1,9 +1,12 @@
-import { LayoutDashboard, ArrowLeftRight, Tag, PiggyBank, Wallet } from 'lucide-react'
+import { LayoutDashboard, ArrowLeftRight, Tag, PiggyBank, Wallet, LogOut } from 'lucide-react'
+import type { User } from '@supabase/supabase-js'
 import type { Page } from '../App'
+import { supabase } from '../lib/supabase'
 
 interface SidebarProps {
   currentPage: Page
   onNavigate: (page: Page) => void
+  user: User
 }
 
 const navItems: { id: Page; label: string; icon: React.ElementType }[] = [
@@ -13,7 +16,14 @@ const navItems: { id: Page; label: string; icon: React.ElementType }[] = [
   { id: 'budget', label: 'Rozpočet', icon: PiggyBank },
 ]
 
-export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
+export default function Sidebar({ currentPage, onNavigate, user }: SidebarProps) {
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+  }
+
+  const name = user.user_metadata?.full_name || user.email || 'Používateľ'
+  const avatar = user.user_metadata?.avatar_url
+
   return (
     <aside
       className="glass-sidebar"
@@ -58,9 +68,32 @@ export default function Sidebar({ currentPage, onNavigate }: SidebarProps) {
         })}
       </nav>
 
-      <div style={{ marginTop: 'auto', padding: '12px 14px' }}>
-        <div style={{ fontSize: 12, color: '#94a3b8' }}>Banka</div>
-        <div style={{ fontWeight: 600, fontSize: 14, color: '#334155' }}>ČSOB</div>
+      <div style={{ marginTop: 'auto', borderTop: '1px solid #f1f5f9', paddingTop: 16 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', marginBottom: 8 }}>
+          {avatar
+            ? <img src={avatar} alt="" style={{ width: 32, height: 32, borderRadius: '50%' }} />
+            : <div style={{ width: 32, height: 32, borderRadius: '50%', background: '#7C3AED22', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, color: '#7C3AED', fontWeight: 600 }}>
+                {name[0].toUpperCase()}
+              </div>
+          }
+          <div style={{ overflow: 'hidden' }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: '#1a1a2e', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{name}</div>
+            <div style={{ fontSize: 11, color: '#94a3b8' }}>ČSOB</div>
+          </div>
+        </div>
+
+        <button
+          onClick={handleLogout}
+          style={{
+            width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+            padding: '8px 12px', borderRadius: 8, border: 'none', cursor: 'pointer',
+            background: 'transparent', color: '#94a3b8', fontSize: 13,
+            transition: 'all 0.15s ease',
+          }}
+        >
+          <LogOut size={15} />
+          Odhlásiť sa
+        </button>
       </div>
     </aside>
   )
